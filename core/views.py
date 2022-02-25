@@ -11,6 +11,7 @@ class Index(TemplateView):
     template_name = "index.html"
 
 def exportUsersPDF(request):
+    """Example of ExportPDF"""
     users = User.objects.all()
 
     users_list = []

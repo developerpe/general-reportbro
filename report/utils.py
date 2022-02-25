@@ -6,8 +6,7 @@ from report.models import ReportDefinition
 
 
 def create_base_report_template(report_type):
-    # use a predefined report definition so you don't have to start from scratch in this demo app,
-    # for a real word app you would probably start with an empty report if nothing was saved previously
+    # create a blank base report template
 
     report_definition = ""
 
@@ -26,6 +25,8 @@ def json_default(obj):
     raise TypeError
 
 def convert_to_64(path):
+    # converto image to base64
+    
     import base64
 
     from django.conf import settings

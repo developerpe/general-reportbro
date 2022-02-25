@@ -38,9 +38,11 @@
     </script>
 
     <div>
+        <!-- Reeplace tag with your tags: person is an example -->
         <a href="/">Inicio</a>
+        <!-- Example -->
         <a href=" {% url 'report:report_edit' 'person' %} ">Personas</a>
-        <a href=" {% url 'report:report_edit' 'users' %} ">Usuarios</a>
+        <a href=" {% url 'report:report_edit' 'tag' %} ">Usuarios</a>
         {% block body %}{% endblock body %}
     </div>
 

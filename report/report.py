@@ -15,19 +15,13 @@ from timeit import default_timer as timer
 from report.models import ReportDefinition, ReportRequest
 from report.utils import create_base_report_template, json_default
 
-MAX_CACHE_SIZE = 1000 * 1024 * 1024  # keep max. 1000 MB of generated pdf files in db
+# keep max. 1000 MB of generated pdf files in db
+MAX_CACHE_SIZE = 1000 * 1024 * 1024
 
 
 @ensure_csrf_cookie
 def edit(request, report_type):
-    """Shows a page with ReportBro Designer to edit our albums report template.
-
-    The report template is loaded from the db (report_definition table),
-    in case no report template exists a hardcoded template is generated in
-    *create_album_report_template* for this Demo App. Normally you'd probably
-    start with an empty report (empty string, so no report is loaded
-    in the Designer) in this case.
-    """
+    """Shows a page with ReportBro Designer to edit our objects report template."""
     context = dict()
     if ReportDefinition.objects.filter(report_type=report_type).count() == 0:
         create_base_report_template(report_type)
@@ -45,7 +39,7 @@ def run(request):
 
     This method is called by ReportBro Designer when the Preview button is clicked,
     the url is defined when initializing the Designer, see *reportServerUrl*
-    in templates/albums/report/edit.html
+    in edit.html
     """
     now = datetime.datetime.now()
 
@@ -80,7 +74,8 @@ def run(request):
         data = json_data.get('data')
         is_test_data = json_data.get('isTestData')
         try:
-            report = Report(report_definition, data, is_test_data, additional_fonts=additional_fonts)
+            report = Report(report_definition, data, is_test_data,
+                            additional_fonts=additional_fonts)
         except Exception as e:
             return HttpResponseBadRequest('failed to initialize report: ' + str(e))
 
@@ -91,12 +86,14 @@ def run(request):
             return HttpResponse(json.dumps(dict(errors=report.errors)))
         try:
             # delete old reports (older than 3 minutes) to avoid table getting too big
-            ReportRequest.objects.filter(created_on__lt=(now - datetime.timedelta(minutes=3))).delete()
+            ReportRequest.objects.filter(created_on__lt=(
+                now - datetime.timedelta(minutes=3))).delete()
 
             total_size = ReportRequest.objects.aggregate(Sum('pdf_file_size'))
             if total_size['pdf_file_size__sum'] and total_size['pdf_file_size__sum'] > MAX_CACHE_SIZE:
                 # delete all reports older than 10 seconds to reduce db size for cached pdf files
-                ReportRequest.objects.filter(created_on__lt=(now - datetime.timedelta(seconds=10))).delete()
+                ReportRequest.objects.filter(created_on__lt=(
+                    now - datetime.timedelta(seconds=10))).delete()
 
             start = timer()
             report_file = report.generate_pdf()
@@ -108,12 +105,13 @@ def run(request):
             # (the report is identified by the key) without any post parameters.
             # This is needed for pdf and xlsx preview.
             ReportRequest.objects.create(
-                key=key, 
-                report_definition=json.dumps(report_definition, default=json_default),
-                data=json.dumps(data, default=json_default), 
+                key=key,
+                report_definition=json.dumps(
+                    report_definition, default=json_default),
+                data=json.dumps(data, default=json_default),
                 is_test_data=is_test_data,
-                pdf_file=report_file, 
-                pdf_file_size=len(report_file), 
+                pdf_file=report_file,
+                pdf_file_size=len(report_file),
                 created_on=now
             )
 
@@ -145,10 +143,12 @@ def run(request):
                 # For SQLITE
                 report_file = report_request.pdf_file
             else:
-                report_definition = json.loads(report_request.report_definition)
+                report_definition = json.loads(
+                    report_request.report_definition)
                 data = json.loads(report_request.data)
                 is_test_data = report_request.is_test_data
-                report = Report(report_definition, data, is_test_data, additional_fonts=additional_fonts)
+                report = Report(report_definition, data,
+                                is_test_data, additional_fonts=additional_fonts)
                 if report.errors:
                     return HttpResponseBadRequest(reason='error generating report')
         else:
@@ -163,7 +163,8 @@ def run(request):
             is_test_data = json_data.get('isTestData')
             if not isinstance(report_definition, dict) or not isinstance(data, dict):
                 return HttpResponseBadRequest('report_definition or data missing')
-            report = Report(report_definition, data, is_test_data, additional_fonts=additional_fonts)
+            report = Report(report_definition, data, is_test_data,
+                            additional_fonts=additional_fonts)
             if report.errors:
                 return HttpResponseBadRequest(reason='error generating report')
 
@@ -199,7 +200,7 @@ def save(request, report_type):
 
     This method is called by save button in ReportBro Designer.
     The url is called in *saveReport* callback from the Designer,
-    see *saveCallback* in templates/albums/report/edit.html
+    see *saveCallback* in edit.html
     """
     json_data = json.loads(request.body.decode('utf-8'))
 
@@ -218,14 +219,15 @@ def save(request, report_type):
     if ReportDefinition.objects.filter(report_type=report_type).update(
             report_definition=report_definition, last_modified_at=now) == 0:
         ReportDefinition.objects.create(
-            report_type=report_type, 
-            report_definition=report_definition, 
+            report_type=report_type,
+            report_definition=report_definition,
             last_modified_at=now
         )
     return HttpResponse('ok')
 
+
 def report(request, report_type, data):
-    """Prints a pdf file with all available albums."""    
+    """Prints a pdf file with data"""
 
     # NOTE: these params must match exactly with the parameters defined in the
     # report definition in ReportBro Designer, check the name and type (Number, Date, List, ...)
@@ -240,7 +242,8 @@ def report(request, report_type, data):
         return HttpResponseServerError('no report_definition available')
 
     try:
-        report_inst = Report(json.loads(report_definition.report_definition), params)
+        report_inst = Report(json.loads(
+            report_definition.report_definition), params)
         if report_inst.errors:
             # report definition should never contain any errors,
             # unless you saved an invalid report and didn't test in ReportBro Designer
@@ -248,10 +251,10 @@ def report(request, report_type, data):
 
         pdf_report = report_inst.generate_pdf()
         response = HttpResponse(pdf_report, content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename="{filename}"'.format(filename='albums.pdf')
+        response['Content-Disposition'] = 'inline; filename="{filename}"'.format(
+            filename='albums.pdf')
         return response
     except ReportBroError as ex:
         return HttpResponseServerError('report error: ' + str(ex.error))
     except Exception as ex:
         return HttpResponseServerError('report exception: ' + str(ex))
-
