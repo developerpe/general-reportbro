@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReportBro</title>
+    <link rel="SHORTCUT ICON" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link href="{% static 'reportbro/ext/spectrum.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'reportbro/reportbro.css' %}" rel="stylesheet" type="text/css" />
+    
+    <script src="{% static 'reportbro/ext/jquery.js' %}"></script>
+    <script src="{% static 'reportbro/ext/autosize.js' %}"></script>
+    <script src="{% static 'reportbro/ext/JsBarcode.all.min.js' %}"></script>
+    <script src="{% static 'reportbro/ext/spectrum.js' %}"></script>
+    <script src="{% static 'reportbro/reportbro.js' %}"></script>
+    <script src="{% static 'js/knockout-3.5.1.min.js' %}"></script>
+    <script src="{% static 'js/jquery.cookie.js' %}"></script>
+
+    <script type="text/javascript">
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    var csrftoken = $.cookie('csrftoken');
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+    </script>
+
+    <div>
+        <a href="/">Inicio</a>
+        <a href=" {% url 'report:report_edit' 'person' %} ">Personas</a>
+        <a href=" {% url 'report:report_edit' 'users' %} ">Usuarios</a>
+        {% block body %}{% endblock body %}
+    </div>
+
+</head>
+<body>
+    
+</body>
+</html>

@@ -1,0 +1,14 @@
+asgiref==3.5.0
+Babel==2.9.1
+backports.zoneinfo==0.2.1
+Django==4.0.2
+enum34==1.1.10
+Pillow==9.0.1
+pytz==2021.3
+qrcode==7.3.1
+reportbro-fpdf==1.7.11
+reportbro-lib==2.0.1
+reportbro-simpleeval==0.9.11
+six==1.16.0
+sqlparse==0.4.2
+XlsxWriter==3.0.2
